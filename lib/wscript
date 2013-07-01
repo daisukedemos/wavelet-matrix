@@ -10,7 +10,7 @@ def build(bld):
         source = ['WaveletMatrix.cpp',
                   'WaveletMatrixBuilder.cpp'
                   ],
-        target = 'wavlet-matrix',
+        target = 'wavelet-matrix',
         name = 'WAVELET-MATRIX',
         use = 'RSDIC'
         )

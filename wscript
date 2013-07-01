@@ -18,4 +18,10 @@ def configure(conf):
 
 
 def build(bld):
-    bld.recurse(subdirs)
+  bld(source = 'wavelet-matrix.pc.in',
+      prefix = bld.env['PREFIX'],
+      exec_prefix = '${prefix}',
+      libdir = '${exec_prefix}/lib',
+      includedir = '${prefix}/include')
+  bld.install_files('${PREFIX}/lib/pkgconfig', 'wavelet-matrix.pc')
+  bld.recurse(subdirs)
