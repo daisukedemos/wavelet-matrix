@@ -1,0 +1,23 @@
+def options(opt):
+    pass
+
+def configure(conf):
+    pass
+
+def build(bld):
+    bld.shlib(
+        features = 'cxx cshlib',
+        source = ['WaveletMatrix.cpp',
+                  'WaveletMatrixBuilder.cpp'
+                  ],
+        target = 'wavlet-matrix',
+        name = 'WAVELET-MATRIX',
+        use = 'RSDIC'
+        )
+    bld.install_files('${PREFIX}/include/wavelet-matrix', bld.path.ant_glob('*.hpp'))
+    bld.program(features = 'gtest',
+            source   = 'WaveletMatrixTest.cpp',
+            includes = '.',
+            target   = 'waveletmatrixTest',
+            use = ['WAVELET-MATRIX']
+            )
