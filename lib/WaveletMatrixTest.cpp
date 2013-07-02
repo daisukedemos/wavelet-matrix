@@ -1,5 +1,6 @@
 #include "WaveletMatrix.hpp"
 #include "WaveletMatrixBuilder.hpp"
+#include <map>
 #include <gtest/gtest.h>
 
 using namespace std;
@@ -57,12 +58,12 @@ TEST(WaveletMatrix, small){
 	EXPECT_EQ(0, wm.Select(3, 0));
 }
 
-TEST(WaveletMatrix, set){
+TEST(WaveletMatrix, random){
 	WaveletMatrixBuilder wmb;
 	WaveletMatrix wm;
-	vector<uint64_t> orig;
-	const int N = 10;
-	const int ALPHA = 4;
+	vector<uint32_t> orig;
+	const int N = 1000;
+	const int ALPHA = 100;
 	for (uint64_t i = 0; i < N; ++i){
 		uint32_t v = rand() % ALPHA;
 		wmb.Add(v);
@@ -71,7 +72,7 @@ TEST(WaveletMatrix, set){
 	wmb.Build(wm);
 
 	EXPECT_EQ(N, wm.Length());
-	vector<uint64_t> cums(ALPHA);
+	vector<uint32_t> cums(ALPHA);
 	for (uint64_t i = 0; i < N; ++i){
 		uint64_t val = orig[i];
 		EXPECT_EQ(val, wm.Lookup(i));
@@ -99,5 +100,48 @@ TEST(WaveletMatrix, set){
 		++cums[val];
 	}
 
+	const uint32_t query_N = 1000;
+	for (uint32_t i = 0; i < query_N; ++i){
+		uint32_t bpos = rand() % (N + 1);
+		uint32_t epos = rand() % (N + 1);
+		if (bpos == epos) continue;
+		if (epos < bpos) swap(bpos, epos);
+		uint32_t k = rand() % (epos - bpos);
+		uint32_t val = wm.Quantile(k, bpos, epos);
+		vector<uint32_t> tmp(epos - bpos);
+		copy(orig.begin() + bpos, orig.begin() + epos, tmp.begin());
+		sort(tmp.begin(), tmp.end());
+		EXPECT_EQ(tmp[k], val);
 
+		uint32_t minval = rand() % ALPHA;
+		uint32_t maxval = rand() % ALPHA;
+		if (minval == maxval) continue;
+		if (maxval < minval) swap(minval, maxval);
+		uint32_t num = 1000;
+		vector<ListResult> res = wm.ListMode(minval, maxval, bpos, epos, num);
+
+		map<uint32_t, uint32_t> counter;
+		for (size_t i = 0; i < tmp.size(); ++i){
+			++counter[tmp[i]];
+		}
+		vector<pair<uint32_t, uint32_t> > ord;
+		for (map<uint32_t, uint32_t>::const_iterator it = counter.begin(); it != counter.end(); ++it){
+			ord.push_back(make_pair(it->second, it->first));
+		}
+		sort(ord.rbegin(), ord.rend());
+		vector<pair<uint32_t, uint32_t> > filtered_ord;
+		for (size_t i = 0; i < ord.size(); ++i){
+			if (minval <= ord[i].second  && ord[i].second < maxval){
+				filtered_ord.push_back(ord[i]);
+				if (filtered_ord.size() == num){
+					break;
+				}
+			}
+		}
+		ASSERT_EQ(filtered_ord.size(), res.size());
+		for (size_t i = 0; i < res.size(); ++i){
+			ASSERT_EQ(filtered_ord[i].second, res[i].val);
+			ASSERT_EQ(filtered_ord[i].first, res[i].count);
+		}
+	}
 }

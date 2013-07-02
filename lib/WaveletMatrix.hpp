@@ -7,6 +7,16 @@
 
 namespace wavelet_matrix{
 
+struct ListResult{
+	ListResult(uint32_t val, uint32_t count) : val(val), count(count) {}
+	uint32_t val;
+	uint32_t count;
+	int operator < (const ListResult& lr) const{
+		if (count != lr.count) return count < lr.count;
+		return val < lr.val;
+	}
+};
+
 class WaveletMatrix{
 public:
 	WaveletMatrix();
@@ -17,6 +27,8 @@ public:
 	uint32_t Lookup(uint32_t pos) const;
 	uint32_t Rank(uint32_t val, uint32_t pos) const;
 	uint32_t Select(uint32_t val, uint32_t ind) const;
+	uint32_t Quantile(uint32_t k, uint32_t bpos, uint32_t epos) const;
+	std::vector<ListResult> ListMode(uint32_t minval, uint32_t maxval, uint32_t bpos, uint32_t epos, uint32_t num) const;
 	std::pair<uint32_t, uint32_t> RankRange(uint32_t val, uint32_t bpos, uint32_t epos) const;
 	std::pair<uint32_t, uint32_t> LookupAndRank(uint32_t pos) const;
 	uint32_t GetWorkingSize() const;
