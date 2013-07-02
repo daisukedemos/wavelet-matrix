@@ -107,7 +107,7 @@ TEST(WaveletMatrix, random){
 		if (bpos == epos) continue;
 		if (epos < bpos) swap(bpos, epos);
 		uint32_t k = rand() % (epos - bpos);
-		uint32_t val = wm.Quantile(k, bpos, epos);
+		uint32_t val = wm.Quantile(k, Range(bpos, epos));
 		vector<uint32_t> tmp(epos - bpos);
 		copy(orig.begin() + bpos, orig.begin() + epos, tmp.begin());
 		sort(tmp.begin(), tmp.end());
@@ -118,7 +118,7 @@ TEST(WaveletMatrix, random){
 		if (minval == maxval) continue;
 		if (maxval < minval) swap(minval, maxval);
 		uint32_t num = 1000;
-		vector<ListResult> res = wm.ListMode(minval, maxval, bpos, epos, num);
+		vector<ListResult> res = wm.ListMode(minval, maxval, Range(bpos, epos), num);
 
 		map<uint32_t, uint32_t> counter;
 		for (size_t i = 0; i < tmp.size(); ++i){

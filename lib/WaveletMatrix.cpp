@@ -49,11 +49,13 @@ uint32_t WaveletMatrix::Lookup(uint32_t pos) const{
 }
 
 uint32_t WaveletMatrix::Rank(uint32_t val, uint32_t pos) const{
-	std::pair<uint32_t, uint32_t> range = RankRange(val, 0, pos);
+	std::pair<uint32_t, uint32_t> range = RankRange(val, Range(0, pos));
 	return range.second - range.first;
 }
 
-std::pair<uint32_t, uint32_t> WaveletMatrix::RankRange(uint32_t val, uint32_t bpos, uint32_t epos) const{
+std::pair<uint32_t, uint32_t> WaveletMatrix::RankRange(uint32_t val, const Range& range) const{
+	uint32_t bpos = range.bpos;
+	uint32_t epos = range.epos;
 	for (uint32_t depth = 0; depth < layers_.size() && bpos < epos; ++depth){
 		uint32_t bit = (val >> (layers_.size() - depth - 1)) & 1LLU;
 		const rsdic::RSDic& rsdic = layers_[depth];
@@ -108,7 +110,9 @@ uint32_t WaveletMatrix::Select(uint32_t val, uint32_t ind) const{
 	return SelectHelper(0, val, ind, 0);
 }
 
-uint32_t WaveletMatrix::Quantile(uint32_t k, uint32_t bpos, uint32_t epos) const{
+uint32_t WaveletMatrix::Quantile(uint32_t k, const Range& range) const{
+	uint32_t bpos = range.bpos;
+	uint32_t epos = range.epos;
 	uint32_t val = 0;
 	for (uint32_t depth = 0; depth < layers_.size() && bpos < epos; ++depth){
 		const rsdic::RSDic& rsdic = layers_[depth];
@@ -161,9 +165,9 @@ bool CheckPrefix(uint32_t prefix, uint32_t depth, uint32_t total_depth, uint32_t
 	else return false;
 }
 
-vector<ListResult> WaveletMatrix::ListMode(uint32_t minval, uint32_t maxval, uint32_t g_bpos, uint32_t g_epos, uint32_t num) const{
+vector<ListResult> WaveletMatrix::ListMode(uint32_t minval, uint32_t maxval, const Range& range, uint32_t num) const{
 	priority_queue<WMRange, vector<WMRange>, ModeCompararator> qs;
-	qs.push(WMRange(g_bpos, g_epos, 0, 0));
+	qs.push(WMRange(range.bpos, range.epos, 0, 0));
 	vector<ListResult> res;
 	while (res.size() < num && !qs.empty()){
 		WMRange range = qs.top();
