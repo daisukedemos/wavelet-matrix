@@ -1,0 +1,1 @@
+Wavelet matrix(tree) is a versatile data structures for keeping sequence data.
